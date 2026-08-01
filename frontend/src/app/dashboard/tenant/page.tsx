@@ -76,14 +76,38 @@ export default function TenantDashboardPage() {
     // Read local submitted requests first
     let localSaved: RentalRequestItem[] = [];
     try {
-      localSaved = JSON.parse(localStorage.getItem("rentnest_submitted_requests") || "[]");
+      const raw = JSON.parse(localStorage.getItem("rentnest_submitted_requests") || "[]");
+      if (Array.isArray(raw)) {
+        // Sanitize browser localStorage to purge all legacy mock/demo items
+        localSaved = raw.filter((r: any) => r && r.id && String(r.id).startsWith("req-user-"));
+        localStorage.setItem("rentnest_submitted_requests", JSON.stringify(localSaved));
+      }
     } catch (err) {}
 
     fetchApi("/rentals")
       .then((res) => {
         let apiData: RentalRequestItem[] = [];
         if (res.data && Array.isArray(res.data)) {
-          apiData = res.data;
+          apiData = res.data.map((r: any) => ({
+            id: r.id,
+            status: r.status,
+            rentalStartDate: r.moveInDate ? new Date(r.moveInDate).toISOString().substring(0, 10) : r.rentalStartDate,
+            rentalEndDate: r.rentalEndDate,
+            message: r.message,
+            property: r.property ? {
+              id: r.property.id,
+              title: r.property.title,
+              rentPrice: r.property.rentPrice || r.monthlyRent || 0,
+              city: r.property.city,
+              address: r.property.address,
+              images: r.property.images,
+            } : undefined,
+            landlord: r.property?.landlord ? {
+              id: r.property.landlord.id,
+              name: r.property.landlord.name,
+              email: r.property.landlord.email,
+            } : undefined,
+          }));
         }
 
         // Deduplicate and combine localSaved at the top
@@ -126,7 +150,7 @@ export default function TenantDashboardPage() {
       await fetchApi("/reviews", {
         method: "POST",
         body: JSON.stringify({
-          propertyId: selectedPropertyId || "prop-4",
+          propertyId: selectedPropertyId || "",
           rating,
           comment,
         }),
@@ -184,7 +208,7 @@ export default function TenantDashboardPage() {
             <div className="pt-2">
               <Link
                 href={`/dashboard/tenant/requests/${
-                  requests.find((r) => r.status === "APPROVED")?.id || "req-001"
+                  requests.find((r) => r.status === "APPROVED")?.id || ""
                 }/pay`}
               >
                 <Button
@@ -302,7 +326,21 @@ export default function TenantDashboardPage() {
         </CardHeader>
 
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          {filteredRequests.length === 0 ? (
+            <div className="p-12 text-center space-y-3">
+              <div className="h-14 w-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+                <Home className="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">No Rental Applications Found</h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                You haven't submitted any rental requests yet. Explore available properties to apply.
+              </p>
+              <Link href="/properties" className="inline-block pt-2">
+                <Button variant="primary" size="sm">Browse Properties</Button>
+              </Link>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
@@ -330,7 +368,7 @@ export default function TenantDashboardPage() {
                         </div>
                         <div>
                           <Link
-                            href={`/properties/${req.property?.id || "prop-1"}`}
+                            href={req.property?.id ? `/properties/${req.property.id}` : "/properties"}
                             className="font-bold text-slate-900 hover:text-blue-600 transition-colors line-clamp-1"
                           >
                             {req.property?.title || "Rental Property"}
@@ -422,6 +460,7 @@ export default function TenantDashboardPage() {
               </tbody>
             </table>
           </div>
+          )}
         </CardContent>
       </Card>
 

@@ -50,7 +50,12 @@ export default function LandlordDashboardPage() {
     // Read locally submitted tenant requests
     let localTenantRequests: any[] = [];
     try {
-      localTenantRequests = JSON.parse(localStorage.getItem("rentnest_submitted_requests") || "[]");
+      const raw = JSON.parse(localStorage.getItem("rentnest_submitted_requests") || "[]");
+      if (Array.isArray(raw)) {
+        // Sanitize browser localStorage to purge all legacy mock/demo items
+        localTenantRequests = raw.filter((r: any) => r && r.id && String(r.id).startsWith("req-user-"));
+        localStorage.setItem("rentnest_submitted_requests", JSON.stringify(localTenantRequests));
+      }
     } catch (err) {}
 
     const formattedLocal: IncomingRequest[] = localTenantRequests.map((r: any) => ({
@@ -279,7 +284,18 @@ export default function LandlordDashboardPage() {
         </CardHeader>
 
         <CardContent className="p-0">
-          <div className="overflow-x-auto">
+          {filteredRequests.length === 0 ? (
+            <div className="p-12 text-center space-y-3">
+              <div className="h-14 w-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+                <Building2 className="h-6 w-6 text-blue-600" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900">No Rental Applications Received</h3>
+              <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                There are currently no incoming rental applications matching your status filter.
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200/80 text-[11px] font-bold uppercase tracking-wider text-slate-500">
@@ -371,6 +387,7 @@ export default function LandlordDashboardPage() {
               </tbody>
             </table>
           </div>
+          )}
         </CardContent>
       </Card>
     </DashboardLayout>

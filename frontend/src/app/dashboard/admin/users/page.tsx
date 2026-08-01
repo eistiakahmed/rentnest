@@ -214,7 +214,7 @@ export default function AdminUserManagementPage() {
                       <td className="py-4 px-6 text-xs text-slate-600">
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 font-mono text-[11px]">
                           <Calendar className="h-3 w-3 text-slate-400" />
-                          <span>{u.createdAt ? u.createdAt.substring(0, 10) : "2026-01-15"}</span>
+                          <span>{u.createdAt ? u.createdAt.substring(0, 10) : "N/A"}</span>
                         </div>
                       </td>
 
