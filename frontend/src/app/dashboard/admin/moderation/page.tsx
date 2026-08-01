@@ -131,7 +131,7 @@ export default function AdminModerationPage() {
                           <td className="py-4 px-6 text-xs text-slate-500">
                             <div className="flex items-center gap-1">
                               <MapPin className="h-3 w-3 text-slate-400" />
-                              <span>{p.city || p.address || "New York"}</span>
+                              <span>{p.city || p.address || "N/A"}</span>
                             </div>
                           </td>
                           <td className="py-4 px-6 font-black text-slate-900 text-base">

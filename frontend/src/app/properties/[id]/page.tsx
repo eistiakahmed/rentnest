@@ -58,45 +58,6 @@ interface PropertyDetail {
   }>;
 }
 
-const DEFAULT_PROPERTY_IMAGES = [
-  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80",
-  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80",
-];
-
-const MOCK_PROPERTY_DETAILS: Record<string, PropertyDetail> = {
-  "prop-1": {
-    id: "prop-1",
-    title: "Luxury Downtown Loft with Skyline View",
-    description:
-      "Spacious modern loft located in the heart of downtown with panoramic city skyline views, floor-to-ceiling windows, polished concrete flooring, and high-end stainless steel appliances. Perfect for professionals looking for urban comfort.",
-    address: "450 5th Avenue, Apt 18B",
-    city: "New York",
-    propertyType: "Loft",
-    bedrooms: 2,
-    bathrooms: 2,
-    rentPrice: 2800,
-    amenities: ["High-speed Wifi", "Central Air Conditioning", "24/7 Fitness Gym", "Elevator Access", "Private Skyline Balcony", "Washer & Dryer"],
-    images: DEFAULT_PROPERTY_IMAGES,
-    status: "AVAILABLE",
-    landlord: {
-      id: "l-1",
-      name: "Sarah Jenkins",
-      email: "sarah.j@example.com",
-      phone: "+1 (555) 234-5678",
-    },
-    reviews: [
-      {
-        id: "rev-1",
-        rating: 5,
-        comment: "Amazing property with incredible sunset views. Landlord was super responsive!",
-        createdAt: "2026-06-15",
-        tenant: { name: "Alex Morgan" },
-      },
-    ],
-  },
-};
-
 export default function PropertyDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
@@ -121,22 +82,18 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
         if (res.data) {
           const loadedProp = res.data;
           const validImages =
-            loadedProp.images && loadedProp.images.length > 0 && loadedProp.images[0].startsWith("http")
+            loadedProp.images && Array.isArray(loadedProp.images)
               ? loadedProp.images
-              : DEFAULT_PROPERTY_IMAGES;
+              : [];
 
           setProperty({ ...loadedProp, images: validImages });
-          setActiveImage(validImages[0]);
+          setActiveImage(validImages[0] || "");
         } else {
-          const fallback = MOCK_PROPERTY_DETAILS[id] || MOCK_PROPERTY_DETAILS["prop-1"];
-          setProperty(fallback);
-          setActiveImage(fallback.images[0]);
+          setProperty(null);
         }
       })
       .catch(() => {
-        const fallback = MOCK_PROPERTY_DETAILS[id] || MOCK_PROPERTY_DETAILS["prop-1"];
-        setProperty(fallback);
-        setActiveImage(fallback.images[0]);
+        setProperty(null);
       })
       .finally(() => setIsLoading(false));
   }, [id]);
@@ -161,19 +118,19 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
       rentalStartDate: startDate,
       rentalEndDate: endDate,
       message: requestMessage,
-      tenantName: user?.name || "Alex Morgan",
-      tenantEmail: user?.email || "tenant@example.com",
+      tenantName: user?.name || "Tenant Applicant",
+      tenantEmail: user?.email || "",
       property: {
         id: property?.id || id,
         title: property?.title || "Rental Property",
-        rentPrice: Number(property?.rentPrice || 2500),
-        city: property?.city || "New York",
-        address: property?.address || "Main Street",
-        images: property?.images || DEFAULT_PROPERTY_IMAGES,
+        rentPrice: Number(property?.rentPrice || 0),
+        city: property?.city || "",
+        address: property?.address || "",
+        images: property?.images || [],
       },
       landlord: {
-        name: property?.landlord?.name || "Sarah Jenkins",
-        email: property?.landlord?.email || "landlord@example.com",
+        name: property?.landlord?.name || "Property Owner",
+        email: property?.landlord?.email || "",
       },
     };
 
@@ -269,7 +226,6 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
               src={activeImage || property.images[0]}
               alt={property.title}
               className="h-full w-full object-cover"
-              onError={() => setActiveImage(DEFAULT_PROPERTY_IMAGES[0])}
             />
             <div className="absolute top-4 left-4">
               <Badge status={property.status} />
@@ -310,7 +266,7 @@ export default function PropertyDetailsPage({ params }: { params: Promise<{ id: 
                   </h1>
                   <p className="text-xs sm:text-sm text-slate-500 mt-1 flex items-center gap-1">
                     <MapPin className="h-4 w-4 text-blue-600" />
-                    <span>{property.address || "Main Street"}, {property.city || "City"}</span>
+                    <span>{[property.address, property.city].filter(Boolean).join(", ") || "Location N/A"}</span>
                   </p>
                 </div>
 

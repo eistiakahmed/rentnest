@@ -37,7 +37,7 @@ function SuccessContent() {
         if (response.data?.payment?.amount) {
           setAmount(response.data.payment.amount.toString());
         } else {
-          setAmount("3300"); // fallback amount
+          setAmount("—");
         }
       } catch (err: any) {
         console.error("Payment confirmation error:", err);

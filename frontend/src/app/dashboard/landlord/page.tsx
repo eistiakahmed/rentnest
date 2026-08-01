@@ -31,45 +31,6 @@ interface IncomingRequest {
   status: "PENDING" | "APPROVED" | "PAYMENT_SUBMITTED" | "REJECTED" | "ACTIVE" | "COMPLETED";
 }
 
-const INITIAL_LANDLORD_REQUESTS: IncomingRequest[] = [
-  {
-    id: "req-101",
-    tenantName: "James Carter",
-    tenantEmail: "j.carter@example.com",
-    propertyTitle: "Luxury Downtown Loft with Skyline View",
-    price: 2800,
-    requestDate: "2026-08-01",
-    status: "PENDING",
-  },
-  {
-    id: "req-102",
-    tenantName: "Emily Watson",
-    tenantEmail: "emily.w@example.com",
-    propertyTitle: "Sunset Heights Modern Apartment",
-    price: 2150,
-    requestDate: "2026-07-29",
-    status: "APPROVED",
-  },
-  {
-    id: "req-103",
-    tenantName: "Robert Chen",
-    tenantEmail: "r.chen@example.com",
-    propertyTitle: "Cozy Garden Villa with Private Pool",
-    price: 2400,
-    requestDate: "2026-07-25",
-    status: "PAYMENT_SUBMITTED",
-  },
-  {
-    id: "req-104",
-    tenantName: "Sarah Jenkins",
-    tenantEmail: "sarah.j@example.com",
-    propertyTitle: "Penthouse Studio with Terrace",
-    price: 3100,
-    requestDate: "2026-07-20",
-    status: "ACTIVE",
-  },
-];
-
 export default function LandlordDashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -95,10 +56,10 @@ export default function LandlordDashboardPage() {
     const formattedLocal: IncomingRequest[] = localTenantRequests.map((r: any) => ({
       id: r.id,
       tenantName: r.tenantName || "Applicant Tenant",
-      tenantEmail: r.tenantEmail || "tenant@example.com",
+      tenantEmail: r.tenantEmail || "",
       propertyTitle: r.property?.title || "Rental Property",
-      price: Number(r.property?.rentPrice || 2500),
-      requestDate: r.rentalStartDate || "2026-08-01",
+      price: Number(r.property?.rentPrice || 0),
+      requestDate: r.rentalStartDate || "",
       status: r.status || "PENDING",
     }));
 
@@ -109,14 +70,12 @@ export default function LandlordDashboardPage() {
           apiData = res.data.map((r: any) => ({
             id: r.id,
             tenantName: r.tenant?.name || "Applicant",
-            tenantEmail: r.tenant?.email || "tenant@example.com",
+            tenantEmail: r.tenant?.email || "",
             propertyTitle: r.property?.title || "Property",
-            price: r.property?.rentPrice || 2500,
-            requestDate: r.rentalStartDate || "2026-08-01",
+            price: r.property?.rentPrice || 0,
+            requestDate: r.rentalStartDate || "",
             status: r.status,
           }));
-        } else {
-          apiData = INITIAL_LANDLORD_REQUESTS;
         }
 
         const combined = [...formattedLocal];
@@ -129,13 +88,7 @@ export default function LandlordDashboardPage() {
         setRequests(combined);
       })
       .catch(() => {
-        const combined = [...formattedLocal];
-        INITIAL_LANDLORD_REQUESTS.forEach((item) => {
-          if (!combined.some((c) => c.id === item.id)) {
-            combined.push(item);
-          }
-        });
-        setRequests(combined);
+        setRequests([...formattedLocal]);
       });
   }, []);
 
@@ -174,8 +127,10 @@ export default function LandlordDashboardPage() {
     }
   };
 
-  const totalEarnings = 8350;
-  const totalProperties = 4;
+  const totalEarnings = requests
+    .filter((r) => r.status === "ACTIVE" || r.status === "COMPLETED" || r.status === "PAYMENT_SUBMITTED")
+    .reduce((sum, r) => sum + (Number(r.price) || 0), 0);
+  const totalProperties = new Set(requests.map((r) => r.propertyTitle).filter(Boolean)).size;
   const pendingRequests = requests.filter((r) => r.status === "PENDING" || r.status === "PAYMENT_SUBMITTED").length;
 
   const filteredRequests = requests.filter((r) => {

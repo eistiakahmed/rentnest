@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       avatarUrl:
         backendUser.profilePhoto ||
         backendUser.profile?.profilePhoto ||
-        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=250&q=80",
+        "",
       status: backendUser.status || "ACTIVE",
     };
   };

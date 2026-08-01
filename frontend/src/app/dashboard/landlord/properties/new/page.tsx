@@ -82,10 +82,8 @@ export default function CreatePropertyPage() {
       bathrooms: Number(formData.bathrooms),
       rentPrice: Number(formData.rentPrice),
       categoryId: formData.categoryId || undefined,
-      images: imagesArray.length > 0 ? imagesArray : [
-        "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80"
-      ],
-      amenities: amenitiesArray.length > 0 ? amenitiesArray : ["Wifi", "Air Conditioning", "Parking"],
+      images: imagesArray,
+      amenities: amenitiesArray,
     };
 
     try {
@@ -97,9 +95,7 @@ export default function CreatePropertyPage() {
       setToastMessage("Property listed successfully! Redirecting to dashboard...");
       setTimeout(() => router.push("/dashboard/landlord"), 1500);
     } catch (err: any) {
-      // Show error or handle demo success
-      setToastMessage("Property listed successfully! Redirecting to dashboard...");
-      setTimeout(() => router.push("/dashboard/landlord"), 1500);
+      setError(err?.message || "Failed to create property listing. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -247,7 +243,7 @@ export default function CreatePropertyPage() {
                 <Textarea
                   label="Image URLs (Comma separated)"
                   name="imagesInput"
-                  placeholder="https://images.unsplash.com/photo-1502672260266, https://images.unsplash.com/photo-1560448204"
+                  placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
                   rows={2}
                   value={formData.imagesInput}
                   onChange={handleChange}

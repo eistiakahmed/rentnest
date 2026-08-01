@@ -42,85 +42,6 @@ interface RentalRequestItem {
   };
 }
 
-const INITIAL_LANDLORD_APPLICATIONS: RentalRequestItem[] = [
-  {
-    id: "req-101",
-    status: "PENDING",
-    rentalStartDate: "2026-09-01",
-    rentalEndDate: "2027-08-31",
-    message: "Hi, I am a quiet software engineer looking to move in September.",
-    property: {
-      id: "prop-1",
-      title: "Luxury Downtown Loft with Skyline View",
-      rentPrice: 2800,
-      city: "New York",
-    },
-    tenant: {
-      id: "t-1",
-      name: "James Carter",
-      email: "j.carter@example.com",
-      phone: "+1 (555) 345-6789",
-    },
-  },
-  {
-    id: "req-102",
-    status: "APPROVED",
-    rentalStartDate: "2026-10-01",
-    rentalEndDate: "2027-04-30",
-    message: "Single professional occupant with excellent credit score.",
-    property: {
-      id: "prop-2",
-      title: "Modern Seaside Apartment near Promenade",
-      rentPrice: 1950,
-      city: "Miami",
-    },
-    tenant: {
-      id: "t-2",
-      name: "Emily Watson",
-      email: "emily.w@example.com",
-      phone: "+1 (555) 987-6543",
-    },
-  },
-  {
-    id: "req-103",
-    status: "PAYMENT_SUBMITTED",
-    rentalStartDate: "2026-08-15",
-    rentalEndDate: "2027-08-14",
-    message: "Completed online payment checkout via Stripe. Ready for move-in!",
-    property: {
-      id: "prop-3",
-      title: "Cozy Garden Villa with Private Pool",
-      rentPrice: 2400,
-      city: "Austin",
-    },
-    tenant: {
-      id: "t-3",
-      name: "Robert Chen",
-      email: "r.chen@example.com",
-      phone: "+1 (555) 456-7890",
-    },
-  },
-  {
-    id: "req-104",
-    status: "ACTIVE",
-    rentalStartDate: "2026-01-01",
-    rentalEndDate: "2026-06-30",
-    message: "Lease currently active.",
-    property: {
-      id: "prop-4",
-      title: "Penthouse Studio with Terrace",
-      rentPrice: 3100,
-      city: "San Francisco",
-    },
-    tenant: {
-      id: "t-4",
-      name: "Sarah Jenkins",
-      email: "sarah.j@example.com",
-      phone: "+1 (555) 234-5678",
-    },
-  },
-];
-
 export default function LandlordRequestsPage() {
   const [requests, setRequests] = useState<RentalRequestItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -132,14 +53,14 @@ export default function LandlordRequestsPage() {
     setIsLoading(true);
     fetchApi("/landlord/requests")
       .then((res) => {
-        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+        if (res.data && Array.isArray(res.data)) {
           setRequests(res.data);
         } else {
-          setRequests(INITIAL_LANDLORD_APPLICATIONS);
+          setRequests([]);
         }
       })
       .catch(() => {
-        setRequests(INITIAL_LANDLORD_APPLICATIONS);
+        setRequests([]);
       })
       .finally(() => setIsLoading(false));
   }, []);
@@ -334,7 +255,7 @@ export default function LandlordRequestsPage() {
                         <div className="font-bold text-slate-900">{req.property?.title || "Property"}</div>
                         <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                           <MapPin className="h-3 w-3 text-slate-400" />
-                          <span>{req.property?.city || "New York"}</span>
+                          <span>{req.property?.city || "N/A"}</span>
                         </div>
                       </td>
 
@@ -343,7 +264,7 @@ export default function LandlordRequestsPage() {
                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-100 border border-slate-200 font-mono text-[11px]">
                           <Calendar className="h-3 w-3 text-slate-400" />
                           <span>
-                            {req.rentalStartDate || "2026-09-01"} to {req.rentalEndDate || "2027-08-31"}
+                            {req.rentalStartDate || "N/A"} to {req.rentalEndDate || "N/A"}
                           </span>
                         </div>
                       </td>

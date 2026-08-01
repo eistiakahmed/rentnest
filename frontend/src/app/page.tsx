@@ -35,61 +35,6 @@ interface PropertyItem {
   images?: string[];
 }
 
-const FALLBACK_HOME_PROPERTIES: PropertyItem[] = [
-  {
-    id: "prop-1",
-    title: "Luxury Downtown Loft with Skyline View",
-    city: "New York",
-    address: "450 5th Avenue, Apt 18B",
-    rentPrice: 2800,
-    bedrooms: 2,
-    bathrooms: 2,
-    status: "AVAILABLE",
-    images: [
-      "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=600&q=80",
-    ],
-  },
-  {
-    id: "prop-2",
-    title: "Modern Seaside Apartment near Promenade",
-    city: "Miami",
-    address: "120 Ocean Drive",
-    rentPrice: 1950,
-    bedrooms: 1,
-    bathrooms: 1,
-    status: "AVAILABLE",
-    images: [
-      "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80",
-    ],
-  },
-  {
-    id: "prop-3",
-    title: "Cozy Garden Villa with Private Pool",
-    city: "Austin",
-    address: "782 Oakwood Terrace",
-    rentPrice: 2400,
-    bedrooms: 3,
-    bathrooms: 2,
-    status: "AVAILABLE",
-    images: [
-      "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=600&q=80",
-    ],
-  },
-  {
-    id: "prop-4",
-    title: "Penthouse Studio with Private Terrace",
-    city: "San Francisco",
-    address: "99 Market Street, PH 4",
-    rentPrice: 3100,
-    bedrooms: 1,
-    bathrooms: 1,
-    status: "AVAILABLE",
-    images: [
-      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80",
-    ],
-  },
-];
-
 export default function HomePage() {
   const [properties, setProperties] = useState<PropertyItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -100,14 +45,14 @@ export default function HomePage() {
     setIsLoading(true);
     fetchApi("/properties")
       .then((res) => {
-        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+        if (res.data && Array.isArray(res.data)) {
           setProperties(res.data);
         } else {
-          setProperties(FALLBACK_HOME_PROPERTIES);
+          setProperties([]);
         }
       })
       .catch(() => {
-        setProperties(FALLBACK_HOME_PROPERTIES);
+        setProperties([]);
       })
       .finally(() => setIsLoading(false));
   }, []);
@@ -212,9 +157,9 @@ export default function HomePage() {
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={
-                        property.images && property.images.length > 0
+                        property.images && property.images.length > 0 && property.images[0]
                           ? property.images[0]
-                          : "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=600&q=80"
+                          : ""
                       }
                       alt={property.title}
                       className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -228,7 +173,7 @@ export default function HomePage() {
                   <CardContent className="p-5 space-y-3">
                     <div className="flex items-center gap-1 text-xs text-slate-500 font-semibold">
                       <MapPin className="h-3.5 w-3.5 text-blue-600" />
-                      <span>{property.city || "New York"}</span>
+                      <span>{property.city || "Location N/A"}</span>
                     </div>
 
                     <h3 className="font-bold text-slate-900 text-base line-clamp-1 group-hover:text-blue-600 transition-colors">

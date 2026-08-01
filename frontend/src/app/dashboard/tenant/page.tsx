@@ -50,8 +50,6 @@ interface RentalRequestItem {
 
 
 
-
-
 export default function TenantDashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
@@ -84,10 +82,8 @@ export default function TenantDashboardPage() {
     fetchApi("/rentals")
       .then((res) => {
         let apiData: RentalRequestItem[] = [];
-        if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+        if (res.data && Array.isArray(res.data)) {
           apiData = res.data;
-        } else {
-          apiData
         }
 
         // Deduplicate and combine localSaved at the top
@@ -101,13 +97,7 @@ export default function TenantDashboardPage() {
         setRequests(combined);
       })
       .catch(() => {
-        const combined = [...localSaved];
-        DEMO_TENANT_WORKFLOW_ITEMS.forEach((item) => {
-          if (!combined.some((c) => c.id === item.id)) {
-            combined.push(item);
-          }
-        });
-        setRequests(combined);
+        setRequests([...localSaved]);
       });
   }, []);
 
@@ -152,7 +142,7 @@ export default function TenantDashboardPage() {
     }
   };
 
-  const getValidThumbnail = (req: RentalRequestItem, idx: number) => {
+  const getValidThumbnail = (req: RentalRequestItem) => {
     const propImages = req.property?.images;
     if (
       propImages &&
@@ -163,7 +153,7 @@ export default function TenantDashboardPage() {
     ) {
       return propImages[0];
     }
-    return DEFAULT_PROPERTY_IMAGES[idx % DEFAULT_PROPERTY_IMAGES.length];
+    return "";
   };
 
   return (
@@ -204,7 +194,7 @@ export default function TenantDashboardPage() {
                   <CreditCard className="h-4 w-4" />
                   <span>
                     Pay Approved Lease ($
-                    {requests.find((r) => r.status === "APPROVED")?.property?.rentPrice || 2800})
+                    {requests.find((r) => r.status === "APPROVED")?.property?.rentPrice || 0})
                   </span>
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -333,7 +323,7 @@ export default function TenantDashboardPage() {
                         <div className="h-12 w-16 shrink-0 rounded-xl bg-slate-200 overflow-hidden shadow-2xs">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
-                            src={getValidThumbnail(req, idx)}
+                            src={getValidThumbnail(req)}
                             alt={req.property?.title || "Property"}
                             className="h-full w-full object-cover"
                           />
@@ -347,7 +337,7 @@ export default function TenantDashboardPage() {
                           </Link>
                           <div className="text-xs text-slate-500 flex items-center gap-1 mt-0.5">
                             <MapPin className="h-3 w-3 text-slate-400" />
-                            <span>{req.property?.city || "New York"}</span>
+                            <span>{req.property?.city || "—"}</span>
                           </div>
                         </div>
                       </div>
@@ -357,10 +347,10 @@ export default function TenantDashboardPage() {
                     <td className="py-4 px-6 text-slate-700">
                       <div className="font-semibold text-slate-900 text-xs flex items-center gap-1.5">
                         <Building2 className="h-3.5 w-3.5 text-slate-400" />
-                        <span>{req.landlord?.name || "Sarah Jenkins"}</span>
+                        <span>{req.landlord?.name || "Landlord"}</span>
                       </div>
                       <div className="text-[11px] text-slate-500 pl-5">
-                        {req.landlord?.email || "landlord@example.com"}
+                        {req.landlord?.email || "—"}
                       </div>
                     </td>
 
@@ -368,13 +358,13 @@ export default function TenantDashboardPage() {
                     <td className="py-4 px-6 text-xs text-slate-600">
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 font-mono text-[11px]">
                         <Calendar className="h-3 w-3 text-slate-400" />
-                        <span>{req.rentalStartDate || "2026-09-01"}</span>
+                        <span>{req.rentalStartDate || "N/A"}</span>
                       </div>
                     </td>
 
                     {/* Monthly Rent */}
                     <td className="py-4 px-6 font-black text-slate-900 text-base">
-                      ${Number(req.property?.rentPrice || 2800).toLocaleString()}
+                      ${Number(req.property?.rentPrice || 0).toLocaleString()}
                       <span className="text-xs font-normal text-slate-400">/mo</span>
                     </td>
 
@@ -389,7 +379,7 @@ export default function TenantDashboardPage() {
                         /* Step 3: Pending Approval - Disabled Pay Button */
                         <span className="inline-flex items-center gap-1 text-xs text-amber-700 bg-amber-50 px-3 py-1.5 rounded-full font-semibold border border-amber-200 opacity-60 cursor-not-allowed">
                           <Clock className="h-3 w-3 text-amber-600" />
-                          <span>In Review ⏳</span>
+                          <span>In Review</span>
                         </span>
                       ) : req.status === "APPROVED" ? (
                         /* Step 5: Landlord Approved - Pay Now Enabled! */

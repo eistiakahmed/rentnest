@@ -323,7 +323,7 @@ export default function AdminDashboardPage() {
                           <span>
                             {u.createdAt
                               ? u.createdAt.substring(0, 10)
-                              : u.joinedDate || "2026-01-15"}
+                              : u.joinedDate || "N/A"}
                           </span>
                         </div>
                       </td>

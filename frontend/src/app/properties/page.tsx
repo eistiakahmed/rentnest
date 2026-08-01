@@ -47,76 +47,6 @@ export interface PropertyItem {
   };
 }
 
-const DEFAULT_PROPERTY_FALLBACK_IMAGES = [
-  "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80",
-  "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80",
-];
-
-const MOCK_FALLBACK_PROPERTIES: PropertyItem[] = [
-  {
-    id: "prop-1",
-    title: "Luxury Downtown Loft with Skyline View",
-    description: "Spacious modern loft located in the heart of downtown with panoramic city skyline views, floor-to-ceiling windows, and high-end stainless steel appliances.",
-    address: "450 5th Avenue, Apt 18B",
-    city: "New York",
-    propertyType: "Loft",
-    bedrooms: 2,
-    bathrooms: 2,
-    rentPrice: 2800,
-    amenities: ["Wifi", "Air Conditioning", "Gym", "Elevator", "Balcony"],
-    images: [DEFAULT_PROPERTY_FALLBACK_IMAGES[0]],
-    status: "AVAILABLE",
-    landlord: { id: "l-1", name: "Sarah Jenkins", email: "sarah.j@example.com" },
-  },
-  {
-    id: "prop-2",
-    title: "Modern Seaside Apartment near Promenade",
-    description: "Beautiful oceanfront apartment featuring 2 bedrooms, updated kitchen, private balcony overlooking the coast, and access to private beach area.",
-    address: "120 Ocean Drive",
-    city: "Miami",
-    propertyType: "Apartment",
-    bedrooms: 2,
-    bathrooms: 1,
-    rentPrice: 1950,
-    amenities: ["Swimming Pool", "Parking", "Sea View", "Pet Friendly"],
-    images: [DEFAULT_PROPERTY_FALLBACK_IMAGES[1]],
-    status: "AVAILABLE",
-    landlord: { id: "l-2", name: "Marcus Vance", email: "m.vance@example.com" },
-  },
-  {
-    id: "prop-3",
-    title: "Cozy Garden Villa with Private Pool",
-    description: "Quiet residential villa surrounded by lush greenery, private heated swimming pool, outdoor patio grill, and master suite with walk-in closet.",
-    address: "782 Oakwood Terrace",
-    city: "Austin",
-    propertyType: "Villa",
-    bedrooms: 3,
-    bathrooms: 2.5,
-    rentPrice: 2400,
-    amenities: ["Private Pool", "Garden", "Garage", "Washer/Dryer"],
-    images: [DEFAULT_PROPERTY_FALLBACK_IMAGES[2]],
-    status: "AVAILABLE",
-    landlord: { id: "l-3", name: "Elena Rostova", email: "elena@example.com" },
-  },
-  {
-    id: "prop-4",
-    title: "Penthouse Studio with Private Terrace",
-    description: "Sleek penthouse studio offering unbeatable city lights views, smart home controls, marble bathroom, and dedicated workspace.",
-    address: "99 Market Street, PH 4",
-    city: "San Francisco",
-    propertyType: "Studio",
-    bedrooms: 1,
-    bathrooms: 1,
-    rentPrice: 3100,
-    amenities: ["Terrace", "Smart Lock", "Concierge", "High Speed Internet"],
-    images: [DEFAULT_PROPERTY_FALLBACK_IMAGES[3]],
-    status: "AVAILABLE",
-    landlord: { id: "l-4", name: "David Miller", email: "david.m@example.com" },
-  },
-];
-
 export default function PropertiesPage() {
   const [properties, setProperties] = useState<PropertyItem[]>([]);
   const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
@@ -145,39 +75,13 @@ export default function PropertiesPage() {
       const endpoint = `/properties${queryString ? `?${queryString}` : ""}`;
       const res = await fetchApi(endpoint);
 
-      if (res.data && Array.isArray(res.data) && res.data.length > 0) {
+      if (res.data && Array.isArray(res.data)) {
         setProperties(res.data);
       } else {
-        let filtered = [...MOCK_FALLBACK_PROPERTIES];
-        if (searchTerm) {
-          filtered = filtered.filter(
-            (p) =>
-              p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              p.description.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-        }
-        if (location) {
-          filtered = filtered.filter(
-            (p) =>
-              p.city.toLowerCase().includes(location.toLowerCase()) ||
-              p.address.toLowerCase().includes(location.toLowerCase())
-          );
-        }
-        if (minPrice) {
-          filtered = filtered.filter((p) => Number(p.rentPrice) >= Number(minPrice));
-        }
-        if (maxPrice) {
-          filtered = filtered.filter((p) => Number(p.rentPrice) <= Number(maxPrice));
-        }
-        if (propertyType) {
-          filtered = filtered.filter(
-            (p) => p.propertyType.toLowerCase() === propertyType.toLowerCase()
-          );
-        }
-        setProperties(filtered);
+        setProperties([]);
       }
     } catch (err) {
-      setProperties(MOCK_FALLBACK_PROPERTIES);
+      setProperties([]);
     } finally {
       setIsLoading(false);
     }
@@ -207,11 +111,11 @@ export default function PropertiesPage() {
     setCategoryId("");
   };
 
-  const getValidImage = (property: PropertyItem, idx: number) => {
+  const getValidImage = (property: PropertyItem) => {
     if (property.images && property.images.length > 0 && property.images[0] && property.images[0].startsWith("http")) {
       return property.images[0];
     }
-    return DEFAULT_PROPERTY_FALLBACK_IMAGES[idx % DEFAULT_PROPERTY_FALLBACK_IMAGES.length];
+    return "";
   };
 
   return (
@@ -361,7 +265,7 @@ export default function PropertiesPage() {
                       <div className="relative h-48 w-full bg-slate-200 overflow-hidden">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={getValidImage(property, idx)}
+                          src={getValidImage(property)}
                           alt={property.title}
                           className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -379,7 +283,7 @@ export default function PropertiesPage() {
                         <div className="flex items-center gap-2 text-xs font-bold text-blue-600 uppercase tracking-wider">
                           <span>{property.propertyType || "Apartment"}</span>
                           <span>•</span>
-                          <span>{property.city || "New York"}</span>
+                          <span>{property.city || "Location N/A"}</span>
                         </div>
 
                         <h3 className="text-lg font-bold text-slate-900 leading-snug group-hover:text-blue-600 transition-colors line-clamp-1">
